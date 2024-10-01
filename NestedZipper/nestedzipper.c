@@ -38,7 +38,6 @@ struct LocalFileHeader {
     short extraFieldLength;    // Extra field length
 };
 
-
 // Central Directory Header (without the filename)
 struct CentralDirectoryHeader {
     int signature;           // 0x02014b50
@@ -59,7 +58,6 @@ struct CentralDirectoryHeader {
     int externalFileAttr;    // External file attributes
     int relativeOffset;      // Offset of local header
 };
-
 
 // End of Central Directory Record
 struct EndOfCentralDirectory {
@@ -101,7 +99,6 @@ int crc32(const char* data, size_t length) {
             }
         }
     }
-
     // Final bitwise inversion, but return as signed int
     int result = ~crc;
     return result;
@@ -269,121 +266,6 @@ int memory_write(char* buffer, size_t* offset, size_t buffer_size, const void* d
     *offset += data_size;
     return 1; // Return success
 }
-
-/*
-int create_zip_to_memory(char* buffer, size_t* offset, size_t buffer_size, ZipFile* zip_files, int file_count) {
-    struct CentralDirectoryHeader* centralHeaders = NULL;
-    HANDLE hHeap = KERNEL32$GetProcessHeap();
-    
-    // Allocate memory for central directory headers
-    centralHeaders = (struct CentralDirectoryHeader*)KERNEL32$HeapAlloc(hHeap, HEAP_ZERO_MEMORY, sizeof(struct CentralDirectoryHeader) * file_count);
-    if (centralHeaders == NULL) {
-        return 0;  // Allocation failure
-    }
-
-    size_t centralDirSize = 0;
-    size_t centralDirStart = *offset;
-
-    // Process each file in the zip_files array
-    for (int i = 0; i < file_count; i++) {
-        const char* filename = zip_files[i].filename;
-        const char* fileContent = zip_files[i].content;
-        size_t fileSize = zip_files[i].size;
-
-        // Initialize the local file header
-        struct LocalFileHeader localHeader;
-        localHeader.signature = 0x04034b50;
-        localHeader.version = 20;  // Version needed to extract (2.0)
-        localHeader.flag = 0;
-        localHeader.compression = 0;  // No compression
-        localHeader.modTime = getDosTime();
-        localHeader.modDate = getDosDate();
-        localHeader.crc32 = crc32(fileContent, fileSize);
-        localHeader.compressedSize = fileSize;
-        localHeader.uncompressedSize = fileSize;
-        localHeader.filenameLength = MyStrLen(filename);
-        localHeader.extraFieldLength = 0;
-
-        // Write local file header to memory
-        if (!memory_write(buffer, offset, buffer_size, &localHeader, sizeof(localHeader))) {
-            KERNEL32$HeapFree(hHeap, 0, centralHeaders);
-            return 0;  // Failure
-        }
-
-        // Write filename to memory
-        if (!memory_write(buffer, offset, buffer_size, filename, MyStrLen(filename))) {
-            KERNEL32$HeapFree(hHeap, 0, centralHeaders);
-            return 0;  // Failure
-        }
-
-        // Write file content to memory
-        if (!memory_write(buffer, offset, buffer_size, fileContent, fileSize)) {
-            KERNEL32$HeapFree(hHeap, 0, centralHeaders);
-            return 0;  // Failure
-        }
-
-        // Prepare the central directory header for this file
-        struct CentralDirectoryHeader centralHeader;
-        centralHeader.signature = 0x02014b50;
-        centralHeader.versionMadeBy = 20;
-        centralHeader.versionNeeded = 20;
-        centralHeader.flag = 0;
-        centralHeader.compression = 0;
-        centralHeader.modTime = localHeader.modTime;
-        centralHeader.modDate = localHeader.modDate;
-        centralHeader.crc32 = localHeader.crc32;
-        centralHeader.compressedSize = localHeader.compressedSize;
-        centralHeader.uncompressedSize = localHeader.uncompressedSize;
-        centralHeader.filenameLength = localHeader.filenameLength;
-        centralHeader.extraFieldLength = 0;
-        centralHeader.commentLength = 0;
-        centralHeader.diskNumberStart = 0;
-        centralHeader.internalFileAttr = 0;
-        centralHeader.externalFileAttr = 0;
-        centralHeader.relativeOffset = centralDirStart;
-
-        // Store the central directory header
-        centralHeaders[i] = centralHeader;
-        centralDirSize += sizeof(centralHeader) + MyStrLen(filename);
-    }
-
-    // Capture the central directory start offset
-    centralDirStart = *offset;
-
-    // Write the central directory headers for all files to memory
-    for (int i = 0; i < file_count; i++) {
-        if (!memory_write(buffer, offset, buffer_size, &centralHeaders[i], sizeof(centralHeaders[i]))) {
-            KERNEL32$HeapFree(hHeap, 0, centralHeaders);
-            return 0;  // Failure
-        }
-        if (!memory_write(buffer, offset, buffer_size, zip_files[i].filename, MyStrLen(zip_files[i].filename))) {
-            KERNEL32$HeapFree(hHeap, 0, centralHeaders);
-            return 0;  // Failure
-        }
-    }
-
-    // Write the End of Central Directory record
-    struct EndOfCentralDirectory eocd;
-    eocd.signature = 0x06054b50;
-    eocd.diskNumber = 0;
-    eocd.centralDirDisk = 0;
-    eocd.numEntriesOnDisk = file_count;
-    eocd.totalEntries = file_count;
-    eocd.centralDirSize = centralDirSize;
-    eocd.centralDirOffset = centralDirStart;
-    eocd.commentLength = 0;
-
-    if (!memory_write(buffer, offset, buffer_size, &eocd, sizeof(eocd))) {
-        KERNEL32$HeapFree(hHeap, 0, centralHeaders);
-        return 0;  // Failure
-    }
-
-    // Clean up
-    KERNEL32$HeapFree(hHeap, 0, centralHeaders);
-
-    return 1;  // Success
-}
-*/
 
 
 int create_zip_to_memory(char* buffer, size_t* offset, size_t buffer_size, ZipFile* zip_files, int file_count) {

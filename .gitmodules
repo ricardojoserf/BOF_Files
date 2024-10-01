@@ -1,0 +1,8 @@
+[submodule "NativeDump"]
+	path = NativeDump
+	url = https://github.com/ricardojoserf/NativeDump
+	branch = bof-flavour
+[submodule "TrickDump"]
+	path = TrickDump
+	url = https://github.com/ricardojoserf/TrickDump
+	branch = bof-flavour

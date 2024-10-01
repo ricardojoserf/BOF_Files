@@ -71,7 +71,6 @@ struct EndOfCentralDirectory {
     short commentLength;       // ZIP file comment length
 };
 
-
 #pragma pack(pop)  // Enable padding
 
 
